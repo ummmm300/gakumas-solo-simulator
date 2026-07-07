@@ -2049,19 +2049,6 @@ function createEmptyDeck(deckName = "新規デッキ") {
   };
 }
 
-function createInitialDecks() {
-  return [
-    {
-      ...createEmptyDeck("センス試作用デッキ"),
-      plan: "sense",
-    },
-    {
-      ...createEmptyDeck("ロジック試作用デッキ"),
-      plan: "logic",
-    },
-  ];
-}
-
 function getPlanLabel(plan) {
   if (plan === "sense") return "センス";
   if (plan === "logic") return "ロジック";
