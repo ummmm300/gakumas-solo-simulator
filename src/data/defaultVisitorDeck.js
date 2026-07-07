@@ -1,9 +1,10 @@
-export const DEFAULT_VISITOR_DECK_EXPORT = {
+export const DEFAULT_VISITOR_DECK_EXPORT = 
+  {
   "app": "gakumas-solo-simulator",
   "version": 1,
-  "exportedAt": "2026-07-07T16:11:22.561Z",
+  "exportedAt": "2026-07-07T16:45:42.881Z",
   "deck": {
-    "id": "deck_910d4245-cb93-45df-8e0e-5a5cc3cfca7b",
+    "id": "deck_113f9b47-8fdb-4720-b86a-f5cb4eeae20a",
     "name": "Cm星南",
     "plan": "sense",
     "maxHp": 35,
@@ -408,9 +409,9 @@ export const DEFAULT_VISITOR_DECK_EXPORT = {
             "amount": 5
           }
         ],
-        "memo": "",
+        "memo": "(使用するときは「1ドロー」と「眠気追加」を押してください)",
         "startInHand": false,
-        "generatesSleepiness": true,
+        "generatesSleepiness": false,
         "fixedScore": null,
         "specialEffectId": "",
         "automationLevel": "manual",
@@ -714,7 +715,7 @@ export const DEFAULT_VISITOR_DECK_EXPORT = {
             "amount": 2
           }
         ],
-        "memo": "",
+        "memo": "(使用するときは乱数ジェネレーター等を併用してください)",
         "startInHand": false,
         "generatesSleepiness": false,
         "fixedScore": null,
@@ -959,11 +960,6 @@ export const DEFAULT_VISITOR_DECK_EXPORT = {
             "id": "cost_2bc14a77-c496-45a7-a6c0-86687949f692",
             "target": "hp",
             "amount": 2
-          },
-          {
-            "id": "cost_f91f7a11-e68d-48c0-9d26-da748e7a7c8b",
-            "target": "hp",
-            "amount": 0
           }
         ],
         "attacks": [
