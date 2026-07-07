@@ -1415,3 +1415,34 @@ button:disabled {
   padding: 16px 20px;
   border-top: 1px solid #e5e7eb;
 }
+
+.deckImportSection {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.deckImportSection h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.deckImportSection textarea {
+  width: 100%;
+  min-height: 180px;
+  box-sizing: border-box;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid #b8c0cc;
+  border-radius: 8px;
+  font: inherit;
+  resize: vertical;
+}
+
+.deckImportActionRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}

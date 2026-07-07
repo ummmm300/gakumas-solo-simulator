@@ -9,6 +9,8 @@ import {
   calculateCardScore,
   applyTurnEndBuffDecay,
 } from "./lib/scoreCalculation";
+import { DEFAULT_VISITOR_DECK_EXPORT } from "./data/defaultVisitorDeck";
+
 
 const X_TWITTER_URL = "https://x.com/wandering_sen";
 
@@ -2049,6 +2051,17 @@ function createEmptyDeck(deckName = "新規デッキ") {
   };
 }
 
+function createInitialDecks() {
+  const initialDeck = normalizeDeck({
+    ...DEFAULT_VISITOR_DECK_EXPORT.deck,
+
+    // 初期デッキ用にIDを作り直す
+    id: createId("deck"),
+  });
+
+  return [initialDeck];
+}
+
 function getPlanLabel(plan) {
   if (plan === "sense") return "センス";
   if (plan === "logic") return "ロジック";
@@ -2150,6 +2163,7 @@ function DeckListPage({
   decks,
   onCreateDeck,
   onEditDeck,
+  onExportDeck,
   onDeleteDeck,
   onBackToPlay,
 }) {
@@ -2192,6 +2206,13 @@ function DeckListPage({
                 </div>
 
                 <div className="deckActions">
+                  <button
+                    type="button"
+                    onClick={() => onExportDeck(deck)}
+                  >
+                    共有
+                  </button>
+
                   <button onClick={() => onEditDeck(deck.id)}>編集</button>
 
                   <button
@@ -2326,6 +2347,7 @@ function DeckEditPage({
   const [specialCardMenuOpenPosition, setSpecialCardMenuOpenPosition] =
     useState(null);
   const [isInitialBuffEditorOpen, setIsInitialBuffEditorOpen] = useState(false);
+  const [importDeckText, setImportDeckText] = useState("");
 
   function renderDeckEditActionButtons(position) {
     const isSpecialCardMenuOpen = specialCardMenuOpenPosition === position;
@@ -2388,6 +2410,50 @@ function DeckEditPage({
         </div>
       </div>
     );
+  }
+
+  function importDeckFromText() {
+    const rawText = importDeckText.trim();
+
+    if (!rawText) {
+      window.alert("インポートするデッキデータを貼り付けてください。");
+      return;
+    }
+
+    let parsed;
+
+    try {
+      parsed = JSON.parse(rawText);
+    } catch {
+      window.alert("デッキデータの読み込みに失敗しました。JSON形式を確認してください。");
+      return;
+    }
+
+    const rawDeck = parsed?.deck ?? parsed;
+
+    if (!rawDeck || typeof rawDeck !== "object" || !Array.isArray(rawDeck.cards)) {
+      window.alert("デッキデータとして認識できませんでした。");
+      return;
+    }
+
+    const isOk = window.confirm(
+      "現在編集中のデッキ内容を、インポートした内容で上書きしますか？"
+    );
+
+    if (!isOk) return;
+
+    const normalizedImportedDeck = normalizeDeck(rawDeck);
+
+    onChangeDeck({
+      ...normalizedImportedDeck,
+
+      // ここは重要。
+      // インポート元のIDではなく、現在編集中のデッキIDを維持する。
+      id: deck.id,
+    });
+
+    setImportDeckText("");
+    window.alert("デッキをインポートしました。");
   }
 
   if (!deck) {
@@ -2500,6 +2566,41 @@ function DeckEditPage({
         </div>
         <div className="deckEditBottomToolbar">
           {renderDeckEditActionButtons("bottom")}
+        </div>
+        <div className="deckImportSection">
+          <h2>デッキインポート</h2>
+
+          <p className="smallNote">
+            エクスポートしたデッキデータを貼り付けてください。
+            実行すると、現在編集中のデッキ内容が上書きされます。
+          </p>
+
+          <textarea
+            value={importDeckText}
+            onChange={(event) => setImportDeckText(event.target.value)}
+            placeholder="ここにエクスポートしたデッキデータを貼り付け"
+            rows={8}
+          />
+
+          <div className="deckImportActionRow">
+            <button
+              type="button"
+              className="primaryButton"
+              onClick={importDeckFromText}
+              disabled={!importDeckText.trim()}
+            >
+              このデッキにインポート
+            </button>
+
+            <button
+              type="button"
+              className="secondaryButton"
+              onClick={() => setImportDeckText("")}
+              disabled={!importDeckText.trim()}
+            >
+              クリア
+            </button>
+          </div>
         </div>
       </section>
     </main>
@@ -3569,7 +3670,7 @@ function UsageModal({ onClose }) {
             <h3>基本操作</h3>
             <ul>
               <li>カードをクリックして選択し、使用・移動・ドローなどのボタンで操作します。</li>
-              <li>一人回し用の検証ツールなので、細かい効果は必要に応じて手動で調整してください。</li>
+              <li>一人回し用の検証ツールです。細かい効果は必要に応じて手動で調整してください。</li>
             </ul>
           </section>
 
@@ -3587,8 +3688,9 @@ function UsageModal({ onClose }) {
               <li>PC環境での利用を想定しています。</li>
               <li>プランはセンスのみ実装しています。</li>
               <li>現状はバフを盛るセンスのみを想定しています。脚光軸には対応していません。</li>
-              <li>「天賦の才」は実装していません。<br />SSR枚数を数えて乱数ジェネレーターを使う等で再現してください。</li>
-              <li>計算結果は検証用です。実際のゲーム内挙動と差がある可能性があります。</li>
+              <li>Pドリンクの実装予定はありません。適宜手動で調整してください。</li>
+              <li>「天賦の才」の実装予定はありません。<br />SSR枚数を数えて乱数ジェネレーターを使う等で再現してください。</li>
+              <li>カード効果や最終スコア等、実際のゲーム内の挙動と異なる可能性があります。</li>
             </ul>
           </section>
         </div>
@@ -3704,6 +3806,34 @@ export default function App() {
     setSelectedDeckId(newDeck.id);
     setEditingDeckId(newDeck.id);
     setScreen("deckEdit");
+  }
+
+  function exportDeck(deck) {
+    const normalizedDeck = normalizeDeck(deck);
+
+    const exportData = {
+      app: "gakumas-solo-simulator",
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      deck: normalizedDeck,
+    };
+
+    const text = JSON.stringify(exportData, null, 2);
+
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard
+        .writeText(text)
+        .then(() => {
+          window.alert(`「${deck.name}」のデッキデータをコピーしました。`);
+        })
+        .catch(() => {
+          window.prompt("コピーに失敗しました。以下をコピーしてください。", text);
+        });
+
+      return;
+    }
+
+    window.prompt("以下をコピーしてください。", text);
   }
 
   function editDeck(deckId) {
@@ -4706,6 +4836,7 @@ export default function App() {
         decks={decks}
         onCreateDeck={createNewDeck}
         onEditDeck={editDeck}
+        onExportDeck={exportDeck}
         onDeleteDeck={deleteDeck}
         onBackToPlay={backToPlay}
       />
