@@ -2470,7 +2470,6 @@ function DeckEditPage({
       <header className="appHeader deckHeader">
         <div>
           <h1>デッキ編集</h1>
-          <p>カードを追加して、デッキ内容を登録します。</p>
         </div>
 
         <div className="headerButtonGroup">
@@ -2925,7 +2924,7 @@ function DeckCardEditor({ card, index, onUpdate, onDelete }) {
               <span>ゲーム開始時手札に入る</span>
             </label>
 
-            {card.cardType !== "sleepiness" && (
+           {/* {card.cardType !== "sleepiness" && (
               <label className="checkRow">
                 <input
                   type="checkbox"
@@ -2936,7 +2935,8 @@ function DeckCardEditor({ card, index, onUpdate, onDelete }) {
                 />
                 <span>使用時、眠気を山札のランダムな位置に生成する</span>
               </label>
-            )}
+            )}  */}
+          
           </div>
 
           <div className="editSection">
