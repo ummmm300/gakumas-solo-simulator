@@ -103,19 +103,22 @@ function calculateSenseAttackScore(attack, buffs, attackIndex) {
   }
 
   const basePower = attackBasePower;
-  const concentration = toNumber(buffs?.concentration, 0);
-  const goodCondition = Math.max(0, toNumber(buffs?.goodCondition, 0));
+  const concentration = toNumber(buffs.concentration, 0);
+  const goodCondition = Math.max(0, toNumber(buffs.goodCondition, 0));
   const excellentCondition = Math.max(
     0,
-    toNumber(buffs?.excellentCondition, 0)
+    toNumber(buffs.excellentCondition, 0)
   );
-  const scoreMultiplier = toNumber(buffs?.scoreMultiplier, 1);
-  const other = toNumber(buffs?.other, 0);
+  const scoreMultiplier = toNumber(buffs.scoreMultiplier, 1);
+  const other = toNumber(buffs.other, 0);
 
   let concentrationPower = concentration;
-  let goodConditionMultiplier = goodCondition > 0 ? 1.5 : 1;
-  let excellentBonus =
-    goodCondition > 0 && excellentCondition > 0 ? goodCondition * 0.1 : 0;
+
+  // 「好調n倍適用」「絶好調n倍適用」用
+  // 好調倍率そのものをn倍するのではなく、
+  // 好調による増加分に倍率をかける
+  let goodConditionEffectMultiplier = 1;
+  let excellentConditionEffectMultiplier = 1;
 
   if (attack.usePowerMultiplier) {
     const multiplierValue = toNumber(attack.powerMultiplierValue, 1);
@@ -125,18 +128,30 @@ function calculateSenseAttackScore(attack, buffs, attackIndex) {
     }
 
     if (attack.powerMultiplierTarget === "goodCondition") {
-      goodConditionMultiplier = goodCondition > 0 ? multiplierValue : 1;
+      goodConditionEffectMultiplier = multiplierValue;
     }
 
     if (attack.powerMultiplierTarget === "excellentCondition") {
-      excellentBonus =
-        goodCondition > 0 && excellentCondition > 0
-          ? goodCondition * 0.1 * multiplierValue
-          : 0;
+      excellentConditionEffectMultiplier = multiplierValue;
     }
   }
 
+  const goodConditionBaseBonus =
+    goodCondition > 0 ? 0.5 * goodConditionEffectMultiplier : 0;
+
+  const excellentBonus =
+    goodCondition > 0 && excellentCondition > 0
+      ? goodCondition *
+      0.1 *
+      goodConditionEffectMultiplier *
+      excellentConditionEffectMultiplier
+      : 0;
+
+  const goodConditionMultiplier =
+    goodCondition > 0 ? 1 + goodConditionBaseBonus : 1;
+
   const rawPower = basePower + concentrationPower + other;
+
   const senseMultiplier =
     goodCondition > 0 ? goodConditionMultiplier + excellentBonus : 1;
 
@@ -152,6 +167,9 @@ function calculateSenseAttackScore(attack, buffs, attackIndex) {
     concentrationPower,
     goodCondition,
     excellentCondition,
+    goodConditionEffectMultiplier,
+    excellentConditionEffectMultiplier,
+    goodConditionBaseBonus,
     scoreMultiplier,
     other,
     rawPower,

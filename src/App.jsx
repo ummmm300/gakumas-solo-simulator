@@ -627,9 +627,8 @@ function calculateSenseAttackScore(attack, buffs, attackIndex) {
   const other = toNumber(buffs.other, 0);
 
   let concentrationPower = concentration;
-  let goodConditionMultiplier = goodCondition > 0 ? 1.5 : 1;
-  let excellentBonus =
-    goodCondition > 0 && excellentCondition > 0 ? goodCondition * 0.1 : 0;
+  let goodConditionEffectMultiplier = 1;
+  let excellentConditionEffectMultiplier = 1;
 
   if (attack.usePowerMultiplier) {
     const multiplierValue = toNumber(attack.powerMultiplierValue, 1);
@@ -639,16 +638,24 @@ function calculateSenseAttackScore(attack, buffs, attackIndex) {
     }
 
     if (attack.powerMultiplierTarget === "goodCondition") {
-      goodConditionMultiplier = goodCondition > 0 ? multiplierValue : 1;
+      goodConditionEffectMultiplier = multiplierValue;
     }
 
     if (attack.powerMultiplierTarget === "excellentCondition") {
-      excellentBonus =
-        goodCondition > 0 && excellentCondition > 0
-          ? goodCondition * 0.1 * multiplierValue
-          : 0;
+      excellentConditionEffectMultiplier = multiplierValue;
     }
   }
+
+  const goodConditionBaseBonus =
+    goodCondition > 0 ? 0.5 * goodConditionEffectMultiplier : 0;
+
+  const excellentBonus =
+    goodCondition > 0 && excellentCondition > 0
+      ? goodCondition * 0.1 * goodConditionEffectMultiplier * excellentConditionEffectMultiplier
+      : 0;
+
+  const goodConditionMultiplier =
+    goodCondition > 0 ? 1 + goodConditionBaseBonus : 1;
 
   const rawPower = basePower + concentrationPower + other;
   const senseMultiplier =
@@ -2924,7 +2931,7 @@ function DeckCardEditor({ card, index, onUpdate, onDelete }) {
               <span>ゲーム開始時手札に入る</span>
             </label>
 
-           {/* {card.cardType !== "sleepiness" && (
+            {/* {card.cardType !== "sleepiness" && (
               <label className="checkRow">
                 <input
                   type="checkbox"
@@ -2936,7 +2943,7 @@ function DeckCardEditor({ card, index, onUpdate, onDelete }) {
                 <span>使用時、眠気を山札のランダムな位置に生成する</span>
               </label>
             )}  */}
-          
+
           </div>
 
           <div className="editSection">
