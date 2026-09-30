@@ -361,7 +361,7 @@ function createCardForImmediateScore(card) {
     : [];
 
   return {
-    ...card,
+    ...createCardForScoreCalculation(card),
     attacks: immediateAttacks,
   };
 }
@@ -1924,7 +1924,7 @@ function loadSelectedDeckIdFromStorage() {
 }
 
 function getPrimaryBasePower(deckCard) {
-  if (deckCard.cardType !== "active") return 0;
+  if (!canUseAttackSettings(deckCard)) return 0;
 
   const firstAttack = deckCard.attacks?.[0];
 
@@ -2085,6 +2085,21 @@ function getCardTypeLabelForDeck(cardType) {
 
 function canUseAttackSettings(card) {
   return card?.cardType === "active" || card?.cardType === "mental";
+}
+
+function createCardForScoreCalculation(card) {
+  if (!card) return card;
+
+  if (!canUseAttackSettings(card)) {
+    return card;
+  }
+
+  return {
+    ...card,
+
+    type: "active",
+    cardType: "active",
+  };
 }
 
 function getAfterUseDestinationLabel(destination) {
@@ -3993,7 +4008,9 @@ export default function App() {
       ? selectedCardCostPreview.nextBuffs
       : gameState.buffs;
 
-    return calculateCardScore(selectedCard, buffsForScore, gameState.plan);
+    const scoreTargetCard = createCardForImmediateScore(selectedCard);
+
+    return calculateCardScore(scoreTargetCard, buffsForScore, gameState.plan);
   }, [selectedCard, selectedCardCostPreview, gameState.buffs, gameState.plan]);
 
   const selectedCardFinalScore = useMemo(() => {
@@ -4983,7 +5000,7 @@ export default function App() {
             <h2>簡易打点</h2>
 
             {selectedCard ? (
-              selectedCard.type === "active" ? (
+              canUseAttackSettings(selectedCard) ? (
                 <>
                   <p>
                     <strong>{selectedCard.name}</strong>
