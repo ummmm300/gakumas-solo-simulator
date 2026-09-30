@@ -2083,6 +2083,10 @@ function getCardTypeLabelForDeck(cardType) {
   return "未設定";
 }
 
+function canUseAttackSettings(card) {
+  return card?.cardType === "active" || card?.cardType === "mental";
+}
+
 function getAfterUseDestinationLabel(destination) {
   const option = AFTER_USE_DESTINATION_OPTIONS.find(
     (item) => item.key === destination
@@ -2637,7 +2641,7 @@ function DeckCardSummary({ cards }) {
                 <td>{card.count}</td>
                 <td>{card.name || "カード名未設定"}</td>
                 <td>{getCardTypeLabelForDeck(card.cardType)}</td>
-                <td>{card.cardType === "active" ? card.attacks.length : "-"}</td>
+                <td>{canUseAttackSettings(card) ? card.attacks.length : "-"}</td>
                 <td>{getAfterUseDestinationLabel(card.afterUseDestination)}</td>
               </tr>
             ))}
@@ -2848,7 +2852,7 @@ function DeckCardEditor({ card, index, onUpdate, onDelete }) {
             )}
           </div>
 
-          {card.cardType === "active" && (
+          {canUseAttackSettings(card) && (
             <div className="editSection">
               <div className="sectionTitleRow">
                 <h4>攻撃設定</h4>
